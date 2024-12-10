@@ -13,6 +13,8 @@ To collect training data, the user simply moves the robot around while keeping a
 
 These data are recorded at a low refresh rate to reduce memory usage while maintaining sufficient granularity for training. The goal is to train a regression model on these graphs to understand the robot’s motion throughout the path rather than memorizing specific points.
 
+![Training Data Collection Phase](./Images/training_data_collection_phase.gif)
+
 ## Solutions
 
 Two solutions were developed to achieve the desired behavior. Both share the same architecture for data collection and training but differ in the choice of machine learning algorithm and implementation strategies.
@@ -23,11 +25,14 @@ Two solutions were developed to achieve the desired behavior. Both share the sam
 
 The first solution used a neural network based on Multi-Layer Perceptrons (MLPs) with ReLU activation functions. This architecture enabled the network to learn complex relationships between time and the recorded data. The network’s structure was initially defined as:
 
-
-
 Input: [1] -> [128] -> [128] -> [1]
 
+vbnet
+Copy code
+
 The neural network took time as an input and produced velocity or IMU angle as the output, effectively running regression on the recorded graphs.
+
+![Multi-Layer Perceptron Regression Using PyTorch](./Images/1%20-%20Non%20Linear%20Regression%20With%20Pytorch.png)
 
 #### Challenges and Observations
 
@@ -42,14 +47,17 @@ To address these issues, the neural network was redesigned to use discrete outpu
 
 By transitioning to discrete outputs, the neural network became a classifier rather than a regressor. The network categorized the input time into discrete steps and mapped these steps to corresponding velocities or IMU angles. The architecture was simplified to:
 
-
-
 Input: [1] -> [20] -> [20]
+
+perl
+Copy code
 
 This approach provided the following advantages:
 - Reduced the number of neurons and computational overhead.
 - Improved memory efficiency, allowing the network to run on the Spike Prime hardware.
 - Enhanced stability during the path-following phase due to discrete outputs.
+
+![Discrete Multi-Layer Perceptron Classifier Using PyTorch](./Images/2%20-%20Discrete%20Classifier%20Using%20Pytorch.png)
 
 ### Solution 2: Polynomial Regression
 
@@ -71,8 +79,15 @@ For both solutions, a PID controller was implemented to maintain the IMU angle d
 
 Comparison of the outputs of the discrete neural network and polynomial regression showed that while both methods successfully generalized the recorded data, polynomial regression provided a smoother and more efficient solution for the Spike Prime platform.
 
+![Comparison Between Discrete Neural Network and Polynomial Regression](./Images/5%20-%20Discrete%20NN%20compared%20to%20Poly%20Regression.png)
+
 ## Conclusion
 
 This project demonstrates the potential of using machine learning for path-following tasks on resource-constrained platforms like the Lego Spike Prime. Neural networks with discrete outputs offered significant improvements over continuous regression but were limited by hardware constraints. Polynomial regression emerged as the optimal solution due to its simplicity, computational efficiency, and robust performance.
 
 Future work may involve further optimization of training algorithms and exploring hybrid approaches to improve performance while maintaining efficiency.
+
+
+
+
+
