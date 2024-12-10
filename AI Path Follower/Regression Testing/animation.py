@@ -18,7 +18,6 @@ for data in data_sets:
 
 # Preparing the figure
 fig, axs = plt.subplots(3, 1, figsize=(10, 8))
-lines_data = []
 lines_poly = []
 titles = ["IMU Data", "Velocity A Data", "Velocity B Data"]
 
@@ -31,32 +30,27 @@ for i, (ax, title) in enumerate(zip(axs, titles)):
         ax.set_ylim(-60, 80)  # Zoom in for velocity data
     ax.set_title(title)
     ax.grid(True)
-    lines_data.append(ax.plot([], [], 'b-', label='Data')[0])
     lines_poly.append(ax.plot([], [], 'r-', label='Poly Fit')[0])
     ax.legend()
 
-# Function to animate data points
-def animate_data(frame):
-    x_data = np.arange(frame + 1)
-    for i, (line, data) in enumerate(zip(lines_data, data_sets)):
-        y_data = data[:frame + 1]
-        line.set_data(x_data, y_data)
-
 # Function to animate the polynomial fit
 def animate_poly(frame):
+    step_fraction = 0.005  # Fraction of the dataset length per frame for finer steps
+    max_x = frame * step_fraction * len(IMU_Data)  # Dynamically extend the range
+    max_x = min(max_x, len(IMU_Data))  # Ensure we don't exceed the dataset length
     for i, (line, poly_fit) in enumerate(zip(lines_poly, poly_fits)):
-        x_fit = np.linspace(0, frame, 500)  # 500 points for smooth fit
+        x_fit = np.linspace(0, max_x, 1000)  # 1000 points for smooth fit
         y_fit = poly_fit(x_fit)
         line.set_data(x_fit, y_fit)
 
 # Update function for animation
 def update(frame):
-    animate_data(frame)
-    #animate_poly(frame)
-    return lines_data + lines_poly
+    animate_poly(frame)
+    return lines_poly
 
 # Animation
-ani = FuncAnimation(fig, update, frames=len(IMU_Data), interval=200, blit=True)
+frames = int(1 / 0.005)  # Number of frames based on step fraction
+ani = FuncAnimation(fig, update, frames=frames, interval=5, blit=True)
 
 # Display the plot
 plt.tight_layout()
