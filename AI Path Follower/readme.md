@@ -27,9 +27,6 @@ The first solution used a neural network based on Multi-Layer Perceptrons (MLPs)
 
 Input: [1] -> [128] -> [128] -> [1]
 
-vbnet
-Copy code
-
 The neural network took time as an input and produced velocity or IMU angle as the output, effectively running regression on the recorded graphs.
 
 ![Multi-Layer Perceptron Regression Using PyTorch](./Images/1%20-%20Non%20Linear%20Regression%20With%20Pytorch.png)
@@ -48,9 +45,6 @@ To address these issues, the neural network was redesigned to use discrete outpu
 By transitioning to discrete outputs, the neural network became a classifier rather than a regressor. The network categorized the input time into discrete steps and mapped these steps to corresponding velocities or IMU angles. The architecture was simplified to:
 
 Input: [1] -> [20] -> [20]
-
-perl
-Copy code
 
 This approach provided the following advantages:
 - Reduced the number of neurons and computational overhead.
