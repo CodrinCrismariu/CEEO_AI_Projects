@@ -79,9 +79,4 @@ Comparison of the outputs of the discrete neural network and polynomial regressi
 
 This project demonstrates the potential of using machine learning for path-following tasks on resource-constrained platforms like the Lego Spike Prime. Neural networks with discrete outputs offered significant improvements over continuous regression but were limited by hardware constraints. Polynomial regression emerged as the optimal solution due to its simplicity, computational efficiency, and robust performance.
 
-Future work may involve further optimization of training algorithms and exploring hybrid approaches to improve performance while maintaining efficiency.
-
-
-
-
 
