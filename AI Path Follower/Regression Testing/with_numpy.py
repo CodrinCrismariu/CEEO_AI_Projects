@@ -89,7 +89,7 @@ class SimpleNeuralNetwork:
         y_pred_rescaled = np.argmax(y_pred, axis=1) / (self.output_size - 1) * (y_max - y_min) + y_min
 
         plt.scatter(x_data, y_true, color='blue', label='True Data')
-        plt.plot(x_data, y_pred_rescaled, color='red', label='NN Predicted Data')
+        #plt.plot(x_data, y_pred_rescaled, color='red', label='NN Predicted Data')
         if poly_fit is not None:
             plt.plot(x_data, poly_fit, color='green', label='Polynomial Fit')
         plt.xlabel('x')

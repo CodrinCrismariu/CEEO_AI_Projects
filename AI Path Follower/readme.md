@@ -27,6 +27,8 @@ These data are recorded at a low refresh rate to reduce memory usage while maint
 
 The first solution utilized polynomial regression for its simplicity and computational efficiency. Polynomial regression smoothed the recorded data and allowed training directly on the LEGO SPIKE Prime hardware without requiring extensive computational resources.
 
+![Polynomial Fit](./Images/7%20-%20Polynomial%20Fit.png)
+
 #### Advantages
 
 - Significantly faster training and inference compared to neural networks.
@@ -37,33 +39,29 @@ The first solution utilized polynomial regression for its simplicity and computa
 
 #### Approach
 
-The second solution used a neural network based on Multi-Layer Perceptrons (MLPs) with ReLU activation functions. This architecture enabled the network to learn complex relationships between time and the recorded data. The network’s structure was initially defined as:
+The second solution used a neural network based on Multi-Layer Perceptrons (MLPs) with ReLU activation functions. This architecture enabled the network to learn complex relationships between time and the recorded data. The neural network took time as an input and produced velocity or IMU angle as the output, effectively running regression on the recorded graphs. Through trial and error I determined that an optimal network structure would be one with two hidden layers both with 128 neurons and one output neuron representing the velocity of the motor. This is a diagram of the network arhitecture used
 
-Input: [1] -> [128] -> [128] -> [1]
-
-The neural network took time as an input and produced velocity or IMU angle as the output, effectively running regression on the recorded graphs.
+![Large Network Diagram](./Images/large%20network.png)
 
 ![Multi-Layer Perceptron Regression Using PyTorch](./Images/1%20-%20Non%20Linear%20Regression%20With%20Pytorch.png)
 
 #### Challenges and Observations
 
 The neural network regression faced significant challenges when implemented on the LEGO SPIKE Prime:
-- The initial network size was too large for the hardware limitations of the SPIKE Prime, leading to memory constraints.
-- Transitioning the implementation to MicroPython, which lacks libraries like NumPy and PyTorch, resulted in extremely slow computation. Matrix multiplications performed in pure Python took approximately 15 minutes to train a network with just 300 neurons.
-- While the neural network captured the overall trends in the data, the continuous outputs were prone to small inaccuracies that compounded during the path-following phase.
+- The initial network size was too large (16640 neuron connections for each network) for the hardware limitations of the SPIKE Prime, leading to memory constraints.
+- Transitioning the implementation to MicroPython, which lacks libraries like NumPy and PyTorch, resulted in extremely slow computation. Matrix multiplications performed in pure Python are too slow for the amount of edges in the network
 
 To address these issues, the neural network was redesigned to use discrete outputs, significantly reducing computational requirements.
 
 #### Discrete Neural Network Regression
 
-By transitioning to discrete outputs, the neural network became a classifier rather than a regressor. The network categorized the input time into discrete steps and mapped these steps to corresponding velocities or IMU angles. The architecture was simplified to one input representing the time, a hidden layer with 20 nodes and an output layer of 20 nodes. Using discrete outputs means that every output node represents a certain velocity and after every run through the neural network we choose the velocity with the highest value in the output nodes. This is a diagram of the network arhitecture.
+By transitioning to discrete outputs, the neural network became a classifier rather than a regressor. The network categorized the input time into discrete steps and mapped these steps to corresponding velocities or IMU angles. The architecture was simplified to one input representing the time, a hidden layer with 20 nodes and an output layer of 20 nodes. Using discrete outputs means that every output node represents a certain velocity and after every run through the neural network we choose the velocity with the highest value in the output nodes. This arhitecture was determined through trial and error to be as small as possible to be able to run on the SPIKE while also achieving efficient regression. This is a diagram of the network arhitecture.
 
 ![Neural Network Diagram](./Images/small%20network%20diagram.png)
 
 This approach provided the following advantages:
-- Reduced the number of neurons and computational overhead.
+- Reduced the number of neurons and computational overhead with only 420 connections compared to 16640 with previous network (40 times less neurons with similar regression results :)) )
 - Improved memory efficiency, allowing the network to run on the SPIKE Prime hardware.
-- Enhanced stability during the path-following phase due to discrete outputs.
 
 ![Discrete Multi-Layer Perceptron Classifier Using PyTorch](./Images/2%20-%20Discrete%20Classifier%20Using%20Pytorch.png)
 
