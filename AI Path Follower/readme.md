@@ -1,5 +1,7 @@
 # Documentation for AI Path-Following Robot
 
+![Robot Static Image](./Images/robot.svg)
+
 ## Introduction
 
 This document provides an overview of an AI robot built using the LEGO SPIKE Prime platform. The robot consists of two motor-driven wheels with encoders and a supporting ball, enabling free movement. The robot’s key feature is its ability to retake the same path it learned during a teaching phase without memorizing every point in the path. Instead, the robot uses machine learning to generalize the movement and replicate the path effectively.
@@ -80,4 +82,3 @@ Comparison of the outputs of the discrete neural network and polynomial regressi
 This project demonstrates the potential of using machine learning for path-following tasks on resource-constrained platforms like the LEGO SPIKE Prime. Polynomial regression emerged as the optimal solution due to its simplicity, computational efficiency, and robust performance. Neural networks with discrete outputs offered significant improvements over continuous regression but were limited by hardware constraints.
 
 ![Test Phase](./Images/test_phase.gif)
-
