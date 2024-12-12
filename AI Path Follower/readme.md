@@ -2,7 +2,11 @@
 
 ## Introduction
 
-This document provides an overview of an AI robot built using the Lego Spike Prime platform. The robot consists of two motor-driven wheels with encoders and a supporting ball, enabling free movement. The robot’s key feature is its ability to retake the same path it learned during a teaching phase without memorizing every point in the path. Instead, the robot uses machine learning to generalize the movement and replicate the path effectively.
+This document provides an overview of an AI robot built using the LEGO SPIKE Prime platform. The robot consists of two motor-driven wheels with encoders and a supporting ball, enabling free movement. The robot’s key feature is its ability to retake the same path it learned during a teaching phase without memorizing every point in the path. Instead, the robot uses machine learning to generalize the movement and replicate the path effectively.
+
+Two solutions were developed to achieve this functionality:
+1. **Polynomial Regression**, which offers simplicity and computational efficiency.
+2. **Neural Network Regression**, which uses a more complex model to capture trends in the data.
 
 ## System Design
 
@@ -17,13 +21,23 @@ These data are recorded at a low refresh rate to reduce memory usage while maint
 
 ## Solutions
 
-Two solutions were developed to achieve the desired behavior. Both share the same architecture for data collection and training but differ in the choice of machine learning algorithm and implementation strategies.
-
-### Solution 1: Neural Network Regression
+### Solution 1: Polynomial Regression
 
 #### Approach
 
-The first solution used a neural network based on Multi-Layer Perceptrons (MLPs) with ReLU activation functions. This architecture enabled the network to learn complex relationships between time and the recorded data. The network’s structure was initially defined as:
+The first solution utilized polynomial regression for its simplicity and computational efficiency. Polynomial regression smoothed the recorded data and allowed training directly on the LEGO SPIKE Prime hardware without requiring extensive computational resources.
+
+#### Advantages
+
+- Significantly faster training and inference compared to neural networks.
+- Produced smoother and more accurate results during path-following tests.
+- Fully compatible with MicroPython, avoiding the need for external libraries.
+
+### Solution 2: Neural Network Regression
+
+#### Approach
+
+The second solution used a neural network based on Multi-Layer Perceptrons (MLPs) with ReLU activation functions. This architecture enabled the network to learn complex relationships between time and the recorded data. The network’s structure was initially defined as:
 
 Input: [1] -> [128] -> [128] -> [1]
 
@@ -33,8 +47,8 @@ The neural network took time as an input and produced velocity or IMU angle as t
 
 #### Challenges and Observations
 
-The neural network regression faced significant challenges when implemented on the Lego Spike Prime:
-- The initial network size was too large for the hardware limitations of the Spike Prime, leading to memory constraints.
+The neural network regression faced significant challenges when implemented on the LEGO SPIKE Prime:
+- The initial network size was too large for the hardware limitations of the SPIKE Prime, leading to memory constraints.
 - Transitioning the implementation to MicroPython, which lacks libraries like NumPy and PyTorch, resulted in extremely slow computation. Matrix multiplications performed in pure Python took approximately 15 minutes to train a network with just 300 neurons.
 - While the neural network captured the overall trends in the data, the continuous outputs were prone to small inaccuracies that compounded during the path-following phase.
 
@@ -48,35 +62,24 @@ Input: [1] -> [20] -> [20]
 
 This approach provided the following advantages:
 - Reduced the number of neurons and computational overhead.
-- Improved memory efficiency, allowing the network to run on the Spike Prime hardware.
+- Improved memory efficiency, allowing the network to run on the SPIKE Prime hardware.
 - Enhanced stability during the path-following phase due to discrete outputs.
 
 ![Discrete Multi-Layer Perceptron Classifier Using PyTorch](./Images/2%20-%20Discrete%20Classifier%20Using%20Pytorch.png)
 
-### Solution 2: Polynomial Regression
-
-#### Approach
-
-The second solution utilized polynomial regression for its simplicity and computational efficiency. Polynomial regression smoothed the recorded data and allowed training directly on the Lego Spike Prime hardware without requiring extensive computational resources.
-
-#### Advantages
-
-- Significantly faster training and inference compared to neural networks.
-- Produced smoother and more accurate results during path-following tests.
-- Fully compatible with MicroPython, avoiding the need for external libraries.
-
-### Control Mechanism: PID Controller
+## Control Mechanism: PID Controller
 
 For both solutions, a PID controller was implemented to maintain the IMU angle during path-following. This ensured improved stability and accuracy compared to relying solely on velocity following.
 
 ## Results
 
-Comparison of the outputs of the discrete neural network and polynomial regression showed that while both methods successfully generalized the recorded data, polynomial regression provided a smoother and more efficient solution for the Spike Prime platform.
+Comparison of the outputs of the discrete neural network and polynomial regression showed that while both methods successfully generalized the recorded data, polynomial regression provided a smoother and more efficient solution for the SPIKE Prime platform.
 
 ![Comparison Between Discrete Neural Network and Polynomial Regression](./Images/5%20-%20Discrete%20NN%20compared%20to%20Poly%20Regression.png)
 
 ## Conclusion
 
-This project demonstrates the potential of using machine learning for path-following tasks on resource-constrained platforms like the Lego Spike Prime. Neural networks with discrete outputs offered significant improvements over continuous regression but were limited by hardware constraints. Polynomial regression emerged as the optimal solution due to its simplicity, computational efficiency, and robust performance.
+This project demonstrates the potential of using machine learning for path-following tasks on resource-constrained platforms like the LEGO SPIKE Prime. Polynomial regression emerged as the optimal solution due to its simplicity, computational efficiency, and robust performance. Neural networks with discrete outputs offered significant improvements over continuous regression but were limited by hardware constraints.
 
 ![Test Phase](./Images/test_phase.gif)
+
