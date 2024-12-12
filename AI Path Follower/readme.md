@@ -25,7 +25,7 @@ These data are recorded at a low refresh rate to reduce memory usage while maint
 
 #### Approach
 
-The first solution utilized polynomial regression for its simplicity and computational efficiency. Polynomial regression smoothed the recorded data and allowed training directly on the LEGO SPIKE Prime hardware without requiring extensive computational resources.
+The first solution utilized polynomial regression for its simplicity, computational efficiency, and ability to easily generalize a graph from key points. Polynomial regression smoothed the recorded data and allowed training directly on the LEGO SPIKE Prime hardware without requiring extensive computational resources.
 
 ![Polynomial Fit](./Images/7%20-%20Polynomial%20Fit.png)
 
