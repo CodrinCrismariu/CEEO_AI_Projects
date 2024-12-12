@@ -43,13 +43,13 @@ The second solution used a neural network based on Multi-Layer Perceptrons (MLPs
 
 ![Large Network Diagram](./Images/large%20network.png)
 
-![Multi-Layer Perceptron Regression Using PyTorch](./Images/1%20-%20Non%20Linear%20Regression%20With%20Pytorch.png)
-
 #### Challenges and Observations
 
 The neural network regression faced significant challenges when implemented on the LEGO SPIKE Prime:
 - The initial network size was too large (16640 neuron connections for each network) for the hardware limitations of the SPIKE Prime, leading to memory constraints.
 - Transitioning the implementation to MicroPython, which lacks libraries like NumPy and PyTorch, resulted in extremely slow computation. Matrix multiplications performed in pure Python are too slow for the amount of edges in the network
+
+![Multi-Layer Perceptron Regression Using PyTorch](./Images/1%20-%20Non%20Linear%20Regression%20With%20Pytorch.png)
 
 To address these issues, the neural network was redesigned to use discrete outputs, significantly reducing computational requirements.
 
