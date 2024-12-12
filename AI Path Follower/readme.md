@@ -60,7 +60,7 @@ By transitioning to discrete outputs, the neural network became a classifier rat
 ![Neural Network Diagram](./Images/small%20network%20diagram.png)
 
 This approach provided the following advantages:
-- Reduced the number of neurons and computational overhead with only 420 connections compared to 16640 with previous network (40 times less neurons with similar regression results :)) )
+- Reduced the number of neurons and computational overhead with only 420 connections compared to 16640 with previous network (40 times less connections with similar regression results :)) )
 - Improved memory efficiency, allowing the network to run on the SPIKE Prime hardware.
 
 ![Discrete Multi-Layer Perceptron Classifier Using PyTorch](./Images/2%20-%20Discrete%20Classifier%20Using%20Pytorch.png)
