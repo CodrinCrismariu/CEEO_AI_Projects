@@ -56,9 +56,9 @@ To address these issues, the neural network was redesigned to use discrete outpu
 
 #### Discrete Neural Network Regression
 
-By transitioning to discrete outputs, the neural network became a classifier rather than a regressor. The network categorized the input time into discrete steps and mapped these steps to corresponding velocities or IMU angles. The architecture was simplified to:
+By transitioning to discrete outputs, the neural network became a classifier rather than a regressor. The network categorized the input time into discrete steps and mapped these steps to corresponding velocities or IMU angles. The architecture was simplified to one input representing the time, a hidden layer with 20 nodes and an output layer of 20 nodes. Using discrete outputs means that every output node represents a certain velocity and after every run through the neural network we choose the velocity with the highest value in the output nodes. This is a diagram of the network arhitecture.
 
-Input: [1] -> [20] -> [20]
+![Neural Network Diagram](./Images/small%20network%20diagram.png)
 
 This approach provided the following advantages:
 - Reduced the number of neurons and computational overhead.
