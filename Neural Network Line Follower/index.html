@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>LEGO SPIKE Car Robot</title>
+  <!-- Include p5.js from CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/p5@1.6.0/lib/p5.min.js"></script>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background: #f0f0f0;
+      font-family: sans-serif;
+      color: #333;
+    }
+    #description {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: rgba(255,255,255,0.8);
+      padding: 10px;
+      border-radius: 5px;
+      font-size: 14px;
+      z-index: 10;
+    }
+  </style>
+</head>
+<body>
+<div id="description">
+  <h3>LEGO SPIKE Car Robot</h3>
+  <p>Use the arrow keys to drive the robot:</p>
+  <ul>
+    <li><b>Up Arrow:</b> Move Forward</li>
+    <li><b>Down Arrow:</b> Move Backward</li>
+    <li><b>Left Arrow:</b> Turn Left</li>
+    <li><b>Right Arrow:</b> Turn Right</li>
+  </ul>
+  <div id="sensor-info">
+    <h4>Sensor Readings:</h4>
+    <p>Right Sensor: <span id="left-sensor-color"></span>, Intensity: <span id="left-sensor-intensity"></span></p>
+    <p>Left Sensor: <span id="right-sensor-color"></span>, Intensity: <span id="right-sensor-intensity"></span></p>
+  </div>
+</div>
+
+<script>
+  let x, y;                // Position of the robot
+  let angle = 0;           // Orientation of the robot
+  let speed = 0;           // Current speed
+  let turnSpeed = 0.05;    // How fast the robot turns
+  let maxSpeed = 3;        // Max forward speed
+  let acceleration = 0.1;  // How quickly the robot accelerates
+  let friction = 0.15;     // Friction to slow down when not pressing keys
+
+  let trackPoints = [];    // Array to hold points for the track
+  let numPoints = 20;      // Number of points to form a track
+
+  // Scale factor to make the car 1.5 times bigger
+  const scaleFactor = 1.5;
+
+  // Dimensions after scaling
+  let bodyW = 60 * scaleFactor;
+  let bodyH = 30 * scaleFactor;
+  let hubW = 30 * scaleFactor;
+  let hubH = 20 * scaleFactor;
+  let wheelSize = 10 * scaleFactor;
+  let wheelXOffset = 25 * scaleFactor;
+  let wheelYOffset = 15 * scaleFactor;
+
+  let sensorDistanceForward = 30 * scaleFactor;
+  let sensorOffsetSide = 8 * scaleFactor;
+  let sensorSize = 10 * scaleFactor;
+  let halfSensor = sensorSize / 2;
+
+  function setup() {
+    createCanvas(window.innerWidth, window.innerHeight);
+
+    // Use a fixed random seed so the track is the same each time
+    randomSeed(42);
+
+    // Generate a semi-random track in an elliptical shape with some jitter
+    let centerX = width / 2;
+    let centerY = height / 2;
+    let baseRadiusX = width * 0.3;
+    let baseRadiusY = height * 0.3;
+
+    for (let i = 0; i < numPoints; i++) {
+      let theta = map(i, 0, numPoints, 0, TWO_PI);
+      let radiusX = baseRadiusX * (1 + 0.1 * sin(i));
+      let radiusY = baseRadiusY * (1 + 0.1 * sin(i * 1.5));
+      let offsetX = random(-20, 20);
+      let offsetY = random(-20, 20);
+      let px = centerX + (radiusX * cos(theta)) + offsetX;
+      let py = centerY + (radiusY * sin(theta)) + offsetY;
+      trackPoints.push({x: px, y: py});
+    }
+
+    // Spawn the car at the first track point
+    // and set its angle to face towards the second track point
+    x = trackPoints[0].x;
+    y = trackPoints[0].y;
+    let dx = trackPoints[1].x - trackPoints[0].x;
+    let dy = trackPoints[1].y - trackPoints[0].y;
+    angle = atan2(dy, dx);
+
+    // No loop for keys, we use setInterval at end
+  }
+
+  function draw() {
+    background(240);
+
+    // Draw the track
+    stroke(0);
+    strokeWeight(5);
+    noFill();
+    beginShape();
+    curveVertex(trackPoints[trackPoints.length - 1].x, trackPoints[trackPoints.length - 1].y);
+    for (let pt of trackPoints) {
+      curveVertex(pt.x, pt.y);
+    }
+    curveVertex(trackPoints[0].x, trackPoints[0].y);
+    curveVertex(trackPoints[1].x, trackPoints[1].y);
+    endShape();
+
+    // Update position based on speed and angle
+    x += speed * cos(angle);
+    y += speed * sin(angle);
+
+    // Apply friction if not pressing forward/back
+    if (!keyIsDown(UP_ARROW) && !keyIsDown(DOWN_ARROW)) {
+      if (speed > 0) {
+        speed = max(speed - friction, 0);
+      } else if (speed < 0) {
+        speed = min(speed + friction, 0);
+      }
+    }
+
+    // Constrain position to stay on canvas
+    x = constrain(x, 0, width);
+    y = constrain(y, 0, height);
+
+    // Calculate sensor positions
+    let rightSensorXCenter = x + sensorDistanceForward * cos(angle) - sensorOffsetSide * sin(angle);
+    let rightSensorYCenter = y + sensorDistanceForward * sin(angle) + sensorOffsetSide * cos(angle);
+
+    let leftSensorXCenter = x + sensorDistanceForward * cos(angle) + sensorOffsetSide * sin(angle);
+    let leftSensorYCenter = y + sensorDistanceForward * sin(angle) - sensorOffsetSide * cos(angle);
+
+    // Get average brightness for sensors
+    let rightBrightness = getSensorAverageBrightness(rightSensorXCenter, rightSensorYCenter, angle);
+    let leftBrightness = getSensorAverageBrightness(leftSensorXCenter, leftSensorYCenter, angle);
+
+    // Determine color name based on brightness (simple threshold)
+    let rightColorName = rightBrightness < 128 ? "Black" : "White";
+    let leftColorName = leftBrightness < 128 ? "Black" : "White";
+
+    // Update sensor info on the page (we swapped them previously)
+    document.getElementById('left-sensor-color').innerText = rightColorName;
+    document.getElementById('left-sensor-intensity').innerText = floor(rightBrightness);
+
+    document.getElementById('right-sensor-color').innerText = leftColorName;
+    document.getElementById('right-sensor-intensity').innerText = floor(leftBrightness);
+
+    // Draw the robot
+    push();
+    translate(x, y);
+    rotate(angle);
+
+    // Body of the LEGO SPIKE car robot (scaled)
+    noStroke();
+    fill(200, 200, 220);
+    rectMode(CENTER);
+    rect(0, 0, bodyW, bodyH, 5*scaleFactor);
+
+    // Decoration or "hub" on top (like the SPIKE hub) scaled
+    fill(255, 255, 200);
+    rect(0, 0, hubW, hubH, 3*scaleFactor);
+
+    // Wheels (scaled)
+    fill(100);
+    rect(-wheelXOffset, -wheelYOffset, wheelSize, wheelSize, 2*scaleFactor); // front-left
+    rect(-wheelXOffset, wheelYOffset, wheelSize, wheelSize, 2*scaleFactor);  // front-right
+    rect(wheelXOffset, -wheelYOffset, wheelSize, wheelSize, 2*scaleFactor);  // back-left
+    rect(wheelXOffset, wheelYOffset, wheelSize, wheelSize, 2*scaleFactor);   // back-right
+
+    // Sensors (scaled)
+    fill(255, 0, 0);
+    rectMode(CENTER);
+    // Right sensor
+    rect(sensorDistanceForward, -sensorOffsetSide, sensorSize, sensorSize);
+    // Left sensor
+    rect(sensorDistanceForward, sensorOffsetSide, sensorSize, sensorSize);
+
+    pop();
+
+    // Get and draw distance to track
+    let distanceToTrack = getDistanceToTrack(x, y);
+    // distanceToTrack now holds the shortest distance from the car to the track
+    // A red line is drawn from the car to the closest point on the track
+  }
+
+  function keyPressed() {
+    if (keyCode === LEFT_ARROW) {
+      angle -= turnSpeed;
+    } else if (keyCode === RIGHT_ARROW) {
+      angle += turnSpeed;
+    } else if (keyCode === UP_ARROW) {
+      speed = min(speed + acceleration, maxSpeed);
+    } else if (keyCode === DOWN_ARROW) {
+      speed = max(speed - acceleration, -maxSpeed / 2); // allow backward movement but slower
+    }
+  }
+
+  // Continuous key checks
+  function keyIsDownCheck() {
+    if (keyIsDown(LEFT_ARROW)) angle -= turnSpeed;
+    if (keyIsDown(RIGHT_ARROW)) angle += turnSpeed;
+    if (keyIsDown(UP_ARROW)) speed = min(speed + acceleration, maxSpeed);
+    if (keyIsDown(DOWN_ARROW)) speed = max(speed - acceleration, -maxSpeed / 2);
+  }
+
+  function keyReleased() {
+    // No direct action needed
+  }
+
+  setInterval(keyIsDownCheck, 16);
+
+  function getConstrainedPixelColor(px, py) {
+    let cx = floor(constrain(px, 0, width - 1));
+    let cy = floor(constrain(py, 0, height - 1));
+    return get(cx, cy); // returns [r,g,b,a]
+  }
+
+  function getSensorAverageBrightness(cx, cy, angle) {
+    let sumBrightness = 0;
+    let count = 0;
+    for (let i = -halfSensor; i < halfSensor; i++) {
+      for (let j = -halfSensor; j < halfSensor; j++) {
+        let worldX = cx + i * cos(angle) - j * sin(angle);
+        let worldY = cy + i * sin(angle) + j * cos(angle);
+
+        let c = getConstrainedPixelColor(worldX, worldY);
+        let b = (red(c) + green(c) + blue(c)) / 3;
+        sumBrightness += b;
+        count++;
+      }
+    }
+    return sumBrightness / count;
+  }
+
+  // Function to get the distance from the car to the closest point on the track
+  // and draw a line representing that distance.
+  function getDistanceToTrack(px, py) {
+    let minDist = Infinity;
+    let closestX, closestY;
+
+    // Loop through track points (closed loop)
+    for (let i = 0; i < trackPoints.length; i++) {
+      let p1 = trackPoints[i];
+      let p2 = trackPoints[(i + 1) % trackPoints.length];
+
+      // Find the closest point on the segment p1->p2 to (px,py)
+      let cPoint = closestPointOnSegment(p1.x, p1.y, p2.x, p2.y, px, py);
+      let d = dist(px, py, cPoint.x, cPoint.y);
+
+      if (d < minDist) {
+        minDist = d;
+        closestX = cPoint.x;
+        closestY = cPoint.y;
+      }
+    }
+
+    // Draw the line representing this distance
+    push();
+    stroke(255, 0, 0);
+    strokeWeight(2);
+    line(px, py, closestX, closestY);
+    pop();
+
+    return minDist;
+  }
+
+  // Helper function: returns the closest point on the line segment (x1,y1)->(x2,y2) to the point (px,py)
+  function closestPointOnSegment(x1, y1, x2, y2, px, py) {
+    let vx = x2 - x1;
+    let vy = y2 - y1;
+    let wx = px - x1;
+    let wy = py - y1;
+
+    let dot = wx * vx + wy * vy;
+    let lenSq = vx * vx + vy * vy;
+    let param = dot / lenSq;
+
+    if (param < 0) param = 0;
+    else if (param > 1) param = 1;
+
+    let cx = x1 + param * vx;
+    let cy = y1 + param * vy;
+
+    return {x: cx, y: cy};
+  }
+</script>
+</body>
+</html>
